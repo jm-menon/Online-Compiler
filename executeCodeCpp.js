@@ -4,12 +4,12 @@ const fs= require('fs');
 
 const { exec } = require('child_process');
 
-const output= path.join(__dirname, "outputs");
+const output= path.join(__dirname, "outputs", "cpp");
 if(!fs.existsSync(output)){
     fs.mkdirSync(output, { recursive: true })
 }
 
-const executeCode=(filePath) => {
+const executeCodeCpp=(filePath) => {
     // Logic to execute the code in the file at filePath
     const jobId= path.basename(filePath).split(".")[0];
     const executable= `${jobId}.out`
@@ -27,4 +27,5 @@ const executeCode=(filePath) => {
         })
     })
 }
-module.exports = executeCode;
+module.exports = executeCodeCpp;
+

@@ -1,6 +1,11 @@
 const express= require('express');
+
 const generateFile= require('./generateFile');
-const executeCode = require('./executeCode');   // ← this line is MISSING
+
+const executeCodeCpp = require('./executeCodeCpp');  
+const executeCodePy = require('./executeCodePy');
+const executeCodeJava = require('./executeCodeJava');
+
 const app= express();
 
 const port= 8080;
@@ -11,14 +16,29 @@ app.use(express.urlencoded({extended: true}));
 
 
 app.post('/run', async (req, res) => {
-    const { language = 'cpp', code } = req.body;
+    const { language = 'cpp', code} = req.body;
     // ...
 
     try {
         const filePath = generateFile(language, code);
 
-        //           ↓↓↓  AWAIT here  ↓↓↓
-        const output = await executeCode(filePath);
+        switch (language) {
+            case 'cpp':
+                output = await executeCodeCpp(filePath);
+                console.log("C++ output:", output);   
+                break;
+            case 'python':
+                output = await executeCodePy(filePath);
+                console.log("Python output:", output);   
+                break;
+            case 'java':
+                output = await executeCodeJava(filePath);
+                console.log("Java output:", output);
+                break;
+            default:
+                throw new Error(`Unsupported language: ${language}`);
+        }
+        
 
         res.json({
             comment: `Code received in ${filePath}`,
@@ -33,6 +53,7 @@ app.post('/run', async (req, res) => {
     }
 });
 
+
 app.listen(port,()=>{
-    console.log(`Server is running pn port ${port}`)
+    console.log(`Server is running on port ${port}`)
 })
