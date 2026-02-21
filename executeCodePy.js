@@ -1,35 +1,69 @@
-const path= require('path');
-const fs= require('fs');
-//const {v4}= require('uuid');
+const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');  // ← use spawn instead of exec
 
-const { exec } = require('child_process');
-const { rejects } = require('assert');
+const outputsDir = path.join(__dirname, "outputs", "python");
 
-const output= path.join(__dirname, "outputs", "python");
-if(!fs.existsSync(output)){
-    fs.mkdirSync(output, { recursive: true })
+if (!fs.existsSync(outputsDir)) {
+    fs.mkdirSync(outputsDir, { recursive: true });
 }
 
-const executeCodePy=(filePath) => {
-    // Logic to execute the code in the file at filePath
+/**
+ * Executes Python code and supports feeding stdin input
+ * @param {string} filePath - full path to the .py file
+ * @param {string} [stdinInput=''] - optional multi-line input to send to stdin
+ */
+const executeCodePy = (filePath, stdinInput = '') => {
     return new Promise((resolve, reject) => {
+        // Start python3 process
+        const child = spawn('python3', [filePath], {
+            stdio: ['pipe', 'pipe', 'pipe'],   // we control stdin/out/err
+            timeout: 10000,                    // kill after 10 seconds
+            killSignal: 'SIGKILL',
+        });
 
-    exec(`python3 "${filePath}"`, { timeout: 10000 }, (error, stdout, stderr) => {
-        if (error) {
-            // Usually syntax error, import error, or non-zero exit
-            return rejects(error.message + (stderr ? `\n${stderr}` : ''));
+        let stdoutData = '';
+        let stderrData = '';
+
+        // Collect output
+        child.stdout.on('data', (data) => {
+            stdoutData += data.toString();
+        });
+
+        child.stderr.on('data', (data) => {
+            stderrData += data.toString();
+        });
+
+        // Handle spawn/startup errors (file not found, permission, etc.)
+        child.on('error', (err) => {
+            reject(new Error(`Failed to start Python: ${err.message}`));
+        });
+
+        // Process finished
+        child.on('close', (code) => {
+            if (code === 0) {
+                // Success
+                resolve({
+                    stdout: stdoutData.trim() || '(no output)',
+                    stderr: stderrData.trim()     // usually empty on success
+                });
+            } else {
+                // Non-zero exit = runtime error or explicit sys.exit(n)
+                const msg = stderrData.trim() || `Python exited with code ${code}`;
+                reject(new Error(`Runtime error:\n${msg}`));
+            }
+        });
+
+        // ─── Feed input to stdin ─────────────────────────────────────
+        if (stdinInput) {
+            child.stdin.setEncoding('utf-8');
+            child.stdin.write(stdinInput);
+            // Optional: ensure final newline if your test cases expect it
+            // child.stdin.write(stdinInput + '\n');
         }
-
-        // Python often puts warnings / debug output in stderr even on success
-        if (stderr && !stderr.includes('Warning')) {
-            return reject(stderr);
-        }
-
-        resolve(stdout.trim() || '(no output)');
+        child.stdin.end();   // ← Critical: signals EOF (like Ctrl+D)
+                             // Without this, input() loops may hang forever
     });
-});
-    
+};
 
-}
 module.exports = executeCodePy;
-

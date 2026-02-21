@@ -1,59 +1,83 @@
-const express= require('express');
+const express = require('express');
+const path = require('path'); // needed for path.basename
 
-const generateFile= require('./generateFile');
-
-const executeCodeCpp = require('./executeCodeCpp');  
+const generateFile = require('./generateFile');
+const executeCodeCpp = require('./executeCodeCpp');
 const executeCodePy = require('./executeCodePy');
 const executeCodeJava = require('./executeCodeJava');
 
-const app= express();
+const app = express();
+const port = 8080;
 
-const port= 8080;
-
-//middleware to parse JSON bodies
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-
+app.use(express.urlencoded({ extended: true }));
 
 app.post('/run', async (req, res) => {
-    const { language = 'cpp', code} = req.body;
-    // ...
+    const { language = 'cpp', code, input = '' } = req.body;
+
+    // Basic validation
+    if (!code || typeof code !== 'string' || code.trim() === '') {
+        return res.status(400).json({
+            success: false,
+            error: 'Valid code is required'
+        });
+    }
 
     try {
         const filePath = generateFile(language, code);
 
-        switch (language) {
+        let result;
+
+        // Normalize language for easier matching
+        const lang = language.toLowerCase();
+
+        switch (lang) {
             case 'cpp':
-                output = await executeCodeCpp(filePath);
-                console.log("C++ output:", output);   
+            case 'c++':
+            case 'cc':
+                result = await executeCodeCpp(filePath, input);
+                console.log('C++ output:', result);
                 break;
+
             case 'python':
-                output = await executeCodePy(filePath);
-                console.log("Python output:", output);   
+            case 'py':
+                result = await executeCodePy(filePath, input);
+                console.log('Python output:', result);
                 break;
+
             case 'java':
-                output = await executeCodeJava(filePath);
-                console.log("Java output:", output);
+                result = await executeCodeJava(filePath, input);
+                console.log('Java output:', result);
                 break;
+
             default:
                 throw new Error(`Unsupported language: ${language}`);
         }
-        
+
+        // Normalize output format (in case some executors return string, others object)
+        const outputValue = typeof result === 'object' && result !== null
+            ? (result.stdout ?? result)
+            : result;
 
         res.json({
-            comment: `Code received in ${filePath}`,
-            value: output
+            success: true,
+            language: lang,
+            output: outputValue,
+            stderr: result?.stderr || '',
+            file: path.basename(filePath)
         });
     } catch (err) {
-        console.error("Execution error:", err);   // ← better logging
+        console.error('Execution error:', err);
+
         res.status(500).json({
+            success: false,
             error: 'Execution failed',
-            details: err.message || String(err)   // ← send something useful to client
+            details: err.message || String(err)
         });
     }
 });
 
-
-app.listen(port,()=>{
-    console.log(`Server is running on port ${port}`)
-})
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
