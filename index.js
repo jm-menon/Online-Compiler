@@ -1,13 +1,24 @@
 const express = require('express');
+
+const cors = require('cors');
+
 const path = require('path'); // needed for path.basename
 
 const generateFile = require('./generateFile');
 const executeCodeCpp = require('./executeCodeCpp');
 const executeCodePy = require('./executeCodePy');
 const executeCodeJava = require('./executeCodeJava');
+const { cleanupOldFiles } = require('./cleanupOutput');
 
 const app = express();
 const port = 8080;
+
+// Allow frontend origin (Vite dev server)
+app.use(cors({
+  origin: 'http://localhost:5173',          // ← your frontend URL
+  methods: ['GET', 'POST', 'OPTIONS'],      // allow POST
+  allowedHeaders: ['Content-Type'],         // allow JSON body
+}));
 
 // Middleware
 app.use(express.json());
@@ -77,6 +88,10 @@ app.post('/run', async (req, res) => {
         });
     }
 });
+
+
+cleanupOldFiles(); // Run once on server start
+
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
