@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         'techno-bg': '#0f0f1a',
         'techno-purple': '#a855f7',
         'techno-blue': '#00d4ff',

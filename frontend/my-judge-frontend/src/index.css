@@ -2,101 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* optional custom styles */
+/* Define CSS variables for light/dark mode */
+:root {
+  --background: 0 0% 100%;     /* light mode */
+  --foreground: 222.2 84% 4.9%; /* light mode text */
+}
+
+.dark {
+  --background: 222.2 84% 4.9%; /* dark mode bg */
+  --foreground: 0 0% 98%;       /* dark mode text */
+}
+
+/* Apply them to body */
 body {
+  /* @apply bg-background text-foreground; */
   margin: 0;
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a0033 100%);
-  color: #e0e0ff;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-
-
-/* Make sure editor background blends */
-.monaco-editor {
-  background: transparent !important;
-}
 
 /* Scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1a0033;
+  background: #1a1a2e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #a855f7;
-  border-radius: 5px;
+  background: #6b7280;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00d4ff;
+  background: #9ca3af;
+}
+
+/* Monaco editor tweaks */
+.monaco-editor {
+  background: transparent !important;
 }
