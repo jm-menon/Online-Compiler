@@ -16,6 +16,8 @@ const port = 8080;
 const connectDB = require('./connectDB');
 
 connectDB(); // Connect to MongoDB
+
+
 // Allow frontend origin (Vite dev server)
 app.use(cors({
   origin: 'http://localhost:5173',          // ← your frontend URL
