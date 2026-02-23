@@ -1,3 +1,4 @@
+require('dotenv').config();  
 const express = require('express');
 
 const cors = require('cors');
@@ -12,7 +13,9 @@ const { cleanupOldFiles } = require('./cleanupOutput');
 
 const app = express();
 const port = 8080;
+const connectDB = require('./connectDB');
 
+connectDB(); // Connect to MongoDB
 // Allow frontend origin (Vite dev server)
 app.use(cors({
   origin: 'http://localhost:5173',          // ← your frontend URL
