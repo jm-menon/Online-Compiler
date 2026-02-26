@@ -10,6 +10,7 @@ const executeCodeCpp = require('./executeCodeCpp');
 const executeCodePy = require('./executeCodePy');
 const executeCodeJava = require('./executeCodeJava');
 const { cleanupOldFiles } = require('./cleanupOutput');
+const authRoutes = require('./routes/auth'); // Import auth routes
 
 const app = express();
 const port = 8080;
@@ -25,9 +26,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],         // allow JSON body
 }));
 
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/auth', authRoutes);
 
 app.post('/run', async (req, res) => {
     const { language = 'cpp', code, input = '' } = req.body;

@@ -1,7 +1,7 @@
 const jwt= require('jsonwebtoken');
-const User= require('./userSchema')
+const User= require('../models/userSchema')
 
-const registerUser= async (req, res)=>{
+exports.registerUser= async (req, res)=>{
     const {username, email, password}= req.body;
     
     try{
@@ -35,3 +35,29 @@ const registerUser= async (req, res)=>{
         res.status(500).json({success: false, error:'Server error'});
     }
 }
+
+exports.loginUser= async (req, res)=>{
+    const {username, password}= req.body;
+    
+    try{
+        // Check if user exists
+        const user= await User.findOne({username});
+        if(!user){
+            return res.status(400).json({success: false, error:'Invalid credentials'});
+        }
+
+        // Check password
+        if(user.password !== password){
+            return res.status(400).json({success: false, error:'Invalid credentials'});
+        }
+
+        //generate JWT token
+        const token= jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn: '10min'});
+
+        res.status(200).json({success: true, message: "user logged in successfully",token});
+    }catch(err){
+        console.error(err);
+        res.status(500).json({success: false, error:'Server error'});
+    }
+}
+       
