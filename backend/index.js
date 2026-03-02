@@ -11,6 +11,8 @@ const executeCodePy = require('./executeCodePy');
 const executeCodeJava = require('./executeCodeJava');
 const { cleanupOldFiles } = require('./cleanupOutput');
 const authRoutes = require('./routes/auth'); // Import auth routes
+const aiRoutes = require('./routes/aiRoutes'); // Import AI routes
+
 
 const app = express();
 const port = 8080;
@@ -18,18 +20,23 @@ const connectDB = require('./connectDB');
 
 connectDB(); // Connect to MongoDB
 
-
 // Allow frontend origin (Vite dev server)
 app.use(cors({
   origin: 'http://localhost:5173',          // ← your frontend URL
   methods: ['GET', 'POST', 'OPTIONS'],      // allow POST
-  allowedHeaders: ['Content-Type'],         // allow JSON body
+  allowedHeaders: ['Content-Type', 'Authorization'],         // allow JSON body and AIs bearer token
 }));
 
 
-// Middleware
-app.use(express.json());
+// Middleware with limits on API for safety
+//app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true }));
+
+
+
+app.use('/api/ai', aiRoutes);
+console.log("AI routes file loaded just outside ai routes"); // Debug log to confirm route loading
 
 app.use('/api/auth', authRoutes);
 

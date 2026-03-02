@@ -1,0 +1,32 @@
+services:
+    frontend:
+        build: ./frontend/my-judge-frontend
+        ports:
+        - "5173:5173"
+        networks:
+        - mern
+    backend:
+        build: ./backend
+        ports:
+        - "8080:8080"
+        networks:
+            - mern
+        depends_on:
+            - mongo
+    mongo:
+        image: mongo:latest
+        volumes:
+        - mongo-data:/data/db
+        ports:
+        - "27017:27017"
+        networks:
+            - mern
+
+networks:
+    mern:
+        driver: bridge
+
+
+volumes:
+    mongo-data:
+        driver: local
