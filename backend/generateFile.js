@@ -22,7 +22,14 @@ const generateFile=(language, code) => {
         if(!fs.existsSync(directory)){
             fs.mkdirSync(directory, { recursive: true });
         }
-    const filename= `${jobId}.${language}`;
+
+
+    if (language === "java") {
+    filename = "Main.java";
+} else {
+    filename = `${jobId}.${extension}`;
+}
+    //const filename= `${jobId}.${language}`;
     const filePath= path.join(directory, filename);
     fs.writeFileSync(filePath, code);
     console.log(`Generated filename: ${filename}`);
