@@ -26,8 +26,10 @@ const generateFile=(language, code) => {
 
     if (language === "java") {
     filename = "Main.java";
-} else {
-    filename = `${jobId}.${extension}`;
+} else if(language === "py" || language === "cpp") {
+    filename = `${jobId}.${language}`;
+}else {
+    throw new Error(`Unsupported language: ${language}`);
 }
     //const filename= `${jobId}.${language}`;
     const filePath= path.join(directory, filename);
