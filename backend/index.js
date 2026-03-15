@@ -34,7 +34,6 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true }));
 
 
-
 app.use('/api/ai', aiRoutes);
 console.log("AI routes file loaded just outside ai routes"); // Debug log to confirm route loading
 
