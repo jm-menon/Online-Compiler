@@ -3,6 +3,7 @@ import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { Sun, Moon } from 'lucide-react';
 import { Navigate } from "react-router-dom";
+import Chatbot from "./Chatbot";
 
 function Compiler() {
   const [language, setLanguage] = useState('cpp');
@@ -242,6 +243,7 @@ Example for sum program:
 
         </div>
       </div>
+      <Chatbot code={code} />
     </div>
   );
 }

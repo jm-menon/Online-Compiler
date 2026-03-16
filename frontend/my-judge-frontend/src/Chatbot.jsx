@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-function Chatbot() {
+function Chatbot({ code }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -14,7 +14,8 @@ function Chatbot() {
 
     try {
       const res = await axios.post("http://localhost:8080/api/ai", {
-        message
+        code: code || "// No code provided",
+        prompt: message
       });
 
       const botMsg = { sender: "bot", text: res.data.reply };
