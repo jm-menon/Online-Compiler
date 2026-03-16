@@ -24,7 +24,7 @@ function Login() {
 
     localStorage.setItem("token", res.data.token);
 
-    navigate("/");   // redirect to compiler
+    navigate("/compile");   // redirect to compiler
 
   } catch (err) {
 

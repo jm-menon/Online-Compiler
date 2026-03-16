@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 import { Sun, Moon } from 'lucide-react';
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Chatbot from "./Chatbot";
+
 
 function Compiler() {
   const [language, setLanguage] = useState('cpp');
@@ -14,6 +15,12 @@ function Compiler() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('dark');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/login");
+};
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -150,6 +157,17 @@ public class Main {
           >
             {loading ? 'Running...' : 'Run'}
           </button>
+          <button
+              onClick={handleLogout}
+              className={`px-5 py-2 rounded-md font-medium transition ${
+                          theme === "dark"
+                            ? "bg-red-600 hover:bg-red-700 text-white"
+                            : "bg-red-500 hover:bg-red-600 text-white"
+                              }`
+                        }
+>
+  Logout
+</button>
         </div>
       </header>
 
