@@ -16,10 +16,28 @@ function Compiler() {
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('dark');
   const navigate = useNavigate();
-
+  
   const handleLogout = () => {
   localStorage.removeItem("token");
   navigate("/login");
+};
+
+  const handleDownload = async () => {
+
+  const response = await axios.post(
+    "http://localhost:8080/api/download",
+    { code, language },
+    { responseType: "blob" }
+  );
+
+  const blob = new Blob([response.data]);
+
+  const link = document.createElement("a");
+
+  link.href = URL.createObjectURL(blob);
+  link.download = `code.${language}`;
+
+  link.click();
 };
 
   useEffect(() => {
@@ -167,6 +185,10 @@ public class Main {
                         }
 >
   Logout
+</button>
+
+<button onClick={handleDownload}>
+  Download
 </button>
         </div>
       </header>

@@ -12,6 +12,7 @@ const executeCodeJava = require('./executeCodeJava');
 const { cleanupOldFiles } = require('./cleanupOutput');
 const authRoutes = require('./routes/auth'); // Import auth routes
 const aiRoutes = require('./routes/aiRoutes'); // Import AI routes
+const downloadFileRoutes = require('./routes/downloadFile'); // Import download file routes
 
 
 const app = express();
@@ -35,8 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/ai', aiRoutes);
-console.log("AI routes file loaded just outside ai routes"); // Debug log to confirm route loading
-
+app.use('/api/download', downloadFileRoutes);
 app.use('/api/auth', authRoutes);
 
 app.post('/run', async (req, res) => {
