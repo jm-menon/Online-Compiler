@@ -2,7 +2,7 @@ const express= require('express');
 const router = express.Router();
 
 
-router.get("/download", (res, req)=>{
+router.post("/", (req, res)=>{
     const {code, language}= req.body
     var String, extension;
     if(language ==="cpp"){  
@@ -17,7 +17,7 @@ router.get("/download", (res, req)=>{
 
 const filename = `code.${extension}`;
 
-res.setHeader('Content-Disposition', `attachement; filename="${filename}"`)
+res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
 res.setHeader('Content-Type', 'text/plain');
 res.send(code);
 });

@@ -22,7 +22,8 @@ function Compiler() {
   navigate("/login");
 };
 
-  const handleDownload = async () => {
+
+    const handleDownload = async () => {
 
   const response = await axios.post(
     "http://localhost:8080/api/download",
@@ -39,6 +40,8 @@ function Compiler() {
 
   link.click();
 };
+
+
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
