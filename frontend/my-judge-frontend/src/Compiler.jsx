@@ -19,7 +19,7 @@ function Compiler() {
   
   const handleLogout = () => {
   localStorage.removeItem("token");
-  navigate("/login");
+  navigate("/");
 };
 
 
@@ -189,9 +189,8 @@ public class Main {
 >
   Logout
 </button>
-
 <button onClick={handleDownload}>
-  Download
+  Download Code
 </button>
         </div>
       </header>

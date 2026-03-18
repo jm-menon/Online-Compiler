@@ -1,10 +1,12 @@
 import { useState } from "react";
 import API from "./api";
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 
 
 function Register() {
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -23,6 +25,7 @@ function Register() {
 
       setMessage(res.data.message);
       localStorage.setItem("token", res.data.token);
+      navigate("/");
 
     } catch (err) {
       setMessage(err.response?.data?.error || "Error occurred");
