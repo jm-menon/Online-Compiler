@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getConn } = require('../connectDB');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -21,4 +22,9 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('User', userSchema);
+
+// connection already open by the time this model is used
+const { usersConn } = getConn();
+const User = usersConn.model('User', userSchema);
+
+module.exports = User;

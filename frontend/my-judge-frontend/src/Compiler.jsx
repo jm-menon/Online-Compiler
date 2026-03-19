@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Sun, Moon } from 'lucide-react';
 import { Navigate, useNavigate } from "react-router-dom";
 import Chatbot from "./Chatbot";
+import Save from "./Save";
 
 
 function Compiler() {
@@ -41,7 +42,32 @@ function Compiler() {
   link.click();
 };
 
+const handleSave = async () => {
+  const title = prompt("Enter snippet title:");
 
+  if (!title) return;
+
+  try {
+    await axios.post(
+      "http://localhost:8080/api/save",
+      {
+        title,
+        language,
+        code
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      }
+    );
+
+    alert("Snippet saved successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save snippet");
+  }
+};
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -49,6 +75,18 @@ function Compiler() {
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
   }, []);
 
+  useEffect(() => {
+  const savedCode = localStorage.getItem("loadedCode");
+  const savedLang = localStorage.getItem("loadedLanguage");
+
+  if (savedCode && savedLang) {
+    setCode(savedCode);
+    setLanguage(savedLang);
+
+    localStorage.removeItem("loadedCode");
+    localStorage.removeItem("loadedLanguage");
+  }
+}, []);
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -191,6 +229,23 @@ public class Main {
 </button>
 <button onClick={handleDownload}>
   Download Code
+</button>
+<button
+  onClick={() => (window.location.href = "/save")}
+  className="px-6 py-2 bg-gray-600 text-white rounded-md"
+>
+  My Snippets
+</button>
+
+<button
+  onClick={handleSave}
+  className={`px-6 py-2 rounded-md font-semibold ${
+    theme === "dark"
+      ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+      : "bg-yellow-500 hover:bg-yellow-600 text-white"
+  }`}
+>
+  Save
 </button>
         </div>
       </header>

@@ -3,6 +3,7 @@ import Compiler from "./Compiler";
 import Login from "./Login";
 import Register from "./Register";
 import Welcome from "./Welcome";
+import Save from "./Save";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route path="/save" element={<Save />} />
 
       </Routes>
 

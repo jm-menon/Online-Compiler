@@ -13,13 +13,22 @@ const { cleanupOldFiles } = require('./cleanupOutput');
 const authRoutes = require('./routes/auth'); // Import auth routes
 const aiRoutes = require('./routes/aiRoutes'); // Import AI routes
 const downloadFileRoutes = require('./routes/downloadFile'); // Import download file routes
-
+const saveFileRoutes = require('./routes/saveFile'); // Import save file routes
 
 const app = express();
 const port = 8080;
-const connectDB = require('./connectDB');
+const { connectDB_users, connectDB_saveFiles } = require('./connectDB');
 
-connectDB(); // Connect to MongoDB
+const start = async () => {
+    await connectDB_users();
+    await connectDB_saveFiles();
+    app.listen(3000, () => console.log('Server running'));
+}
+
+start();
+
+connectDB_users(); // Connect to MongoDB
+connectDB_saveFiles(); // Connect to MongoDB for save files
 
 // Allow frontend origin (Vite dev server)
 app.use(cors({
@@ -37,6 +46,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/ai', aiRoutes);
 app.use('/api/download', downloadFileRoutes);
+app.use('/api/save', saveFileRoutes);
 app.use('/api/auth', authRoutes);
 
 app.post('/run', async (req, res) => {

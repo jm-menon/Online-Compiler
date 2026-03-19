@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getConn } = require('../connectDB');
 
 const saveFileSchema= new mongoose.Schema({
     userId:{
@@ -25,4 +26,7 @@ const saveFileSchema= new mongoose.Schema({
     }
 });
 
-module.exports= mongoose.model('SavedFiles', saveFileSchema)
+const { saveFilesConn } = getConn();
+const SaveFile = saveFilesConn.model('SavedFile', saveFileSchema);
+
+module.exports = SaveFile;

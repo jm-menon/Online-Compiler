@@ -1,14 +1,28 @@
-const mongoose= require('mongoose');
+const mongoose = require('mongoose');
 
-const connectDB = async () => {
-    try{
-        const connect= await mongoose.connect(process.env.CONNECTION_STRING);
-        console.log(`MongoDB Connected: ${connect.connection.host} and ${connect.connection.name}`);
-    }catch(err){
+let usersConn = null;
+let saveFilesConn = null;
+
+exports.connectDB_users = async () => {
+    try {
+        usersConn = await mongoose.createConnection(process.env.CONNECTION_STRING_USERS).asPromise();
+        console.log(`Users DB Connected: ${usersConn.host} - ${usersConn.name}`);
+        return usersConn;
+    } catch (err) {
         console.error(err.message);
         process.exit(1);
     }
-
 }
 
-module.exports=connectDB;
+exports.connectDB_saveFiles = async () => {
+    try {
+        saveFilesConn = await mongoose.createConnection(process.env.CONNECTION_STRING_SAVE_FILES).asPromise();
+        console.log(`SaveFiles DB Connected: ${saveFilesConn.host} - ${saveFilesConn.name}`);
+        return saveFilesConn;
+    } catch (err) {
+        console.error(err.message);
+        process.exit(1);
+    }
+}
+
+exports.getConn = () => ({ usersConn, saveFilesConn });
