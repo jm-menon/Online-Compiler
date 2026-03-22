@@ -6,6 +6,26 @@ function Save() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ filename: "", language: "", code: "" });
   const token = localStorage.getItem("token");
+  const [searchQuery, setSearchQuery] = useState("");
+
+const handleSearch = async (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim() === "") {
+        fetchSavedFiles(); // reset to full list when search is cleared
+        return;
+    }
+
+    try {
+        const res = await axios.get(`http://localhost:8080/api/save/search?query=${value}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setSavedFiles(res.data);
+    } catch (err) {
+        console.error(err);
+    }
+};
 
   const fetchSavedFiles = async () => {
     try {
@@ -71,7 +91,12 @@ function Save() {
   return (
     <div style={styles.container}>
       <h1>My Saved Files</h1>
-      
+        <input
+          style={styles.searchBar}
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search by filename..."
+        />
       {savedFiles.length === 0 ? (
         <p>No files saved yet.</p>
       ) : (

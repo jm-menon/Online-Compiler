@@ -98,12 +98,26 @@ exports.saveFile = async (req, res) => {
     }
 }
 
-exports.findFile = async (req, res) => {
+/*exports.findFile = async (req, res) => {
     const saveFileSchema = getSaveFile(); // ADDED
     try {
         const file = await saveFileSchema.findById(req.params.id); // FIXED: was req.params (object), needs req.params.id
         if (!file) return res.status(404).json({ message: 'File not found' });
         res.json(file);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+}*/
+exports.findFile = async (req, res) => {
+    const saveFileSchema = getSaveFile();
+    try {
+        const { query } = req.query; // /api/save/search?query=myfile
+        const files = await saveFileSchema.find({
+            userId: req.user,
+            filename: { $regex: query, $options: 'i' } // case insensitive
+        });
+        res.json(files);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

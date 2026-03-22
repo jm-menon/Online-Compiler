@@ -5,7 +5,7 @@ const authMiddleware= require('../middleware/authMiddleware');
 
 router.post("/", authMiddleware, saveFile);
 router.get("/", authMiddleware, showAllFile);
-router.get("/:id", authMiddleware, findFile);
+router.get("/search", authMiddleware, findFile);
 router.put("/:id", authMiddleware, editFile);
 router.delete("/:id", authMiddleware, deleteFile);
 
