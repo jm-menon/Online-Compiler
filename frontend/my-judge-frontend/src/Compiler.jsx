@@ -14,19 +14,15 @@ function Compiler() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('dark');
-
-  // history state
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [restoreConfirm, setRestoreConfirm] = useState(null); // holds entry to restore
+  const [restoreConfirm, setRestoreConfirm] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   if (!token) return <Navigate to="/login" />;
-
-  // ─── History Functions ───────────────────────────────────────
 
   const fetchHistory = async () => {
     setHistoryLoading(true);
@@ -43,19 +39,17 @@ function Compiler() {
   };
 
   const toggleHistory = () => {
-    if (!historyOpen) fetchHistory(); // lazy fetch — only load when panel opens
+    if (!historyOpen) fetchHistory();
     setHistoryOpen((prev) => !prev);
   };
 
-  const handleRestore = (entry) => {
-    setRestoreConfirm(entry); // show confirmation first
-  };
+  const handleRestore = (entry) => setRestoreConfirm(entry);
 
   const confirmRestore = () => {
     setCode(restoreConfirm.code);
     setLanguage(restoreConfirm.language);
     setRestoreConfirm(null);
-    setHistoryOpen(false); // close panel after restore
+    setHistoryOpen(false);
   };
 
   const handleDeleteHistory = async (id) => {
@@ -68,8 +62,6 @@ function Compiler() {
       console.error(err);
     }
   };
-
-  // ─── Existing Functions ──────────────────────────────────────
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -109,27 +101,20 @@ function Compiler() {
     setOutput('');
     setStderr('');
     setError('');
-
     try {
       const response = await axios.post('http://localhost:8080/run', {
         language, code, input: input.trim()
       });
-
       const data = response.data;
-
       if (data.success) {
         setOutput(data.output || '(no output)');
         setStderr(data.stderr || '');
-
-        // auto save to history on every run
         await axios.post("http://localhost:8080/api/history",
           { code, language, output: data.output, status: 'success' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         setError(data.error || 'Unknown error');
-
-        // save failed runs too — useful for debugging
         await axios.post("http://localhost:8080/api/history",
           { code, language, output: data.error, status: 'error' },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -194,8 +179,6 @@ function Compiler() {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
-  // ─── Render ──────────────────────────────────────────────────
-
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'} flex flex-col transition-colors duration-300`}>
 
@@ -206,12 +189,10 @@ function Compiler() {
             My Online Compiler
           </span>
         </h1>
-
         <div className="flex items-center gap-6">
           <button onClick={toggleTheme} className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition`}>
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-
           <select
             value={language}
             onChange={handleLanguageChange}
@@ -223,7 +204,6 @@ function Compiler() {
             <option value="python">Python</option>
             <option value="java">Java</option>
           </select>
-
           <button
             onClick={handleRun}
             disabled={loading}
@@ -235,22 +215,17 @@ function Compiler() {
           >
             {loading ? 'Running...' : 'Run'}
           </button>
-
-          {/* History Toggle Button */}
           <button
             onClick={toggleHistory}
             className={`flex items-center gap-2 px-5 py-2 rounded-md font-medium transition ${
-              historyOpen
-                ? 'bg-purple-600 text-white'
-                : theme === 'dark'
-                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+              historyOpen ? 'bg-purple-600 text-white'
+              : theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
             }`}
           >
             <History size={16} />
             History
           </button>
-
           <button
             onClick={handleLogout}
             className={`px-5 py-2 rounded-md font-medium transition ${
@@ -259,16 +234,13 @@ function Compiler() {
           >
             Logout
           </button>
-
           <button onClick={handleDownload}>Download Code</button>
-
           <button
             onClick={() => (window.location.href = "/save")}
             className="px-6 py-2 bg-gray-600 text-white rounded-md"
           >
             My Snippets
           </button>
-
           <button
             onClick={handleSave}
             className={`px-6 py-2 rounded-md font-semibold ${
@@ -302,8 +274,8 @@ function Compiler() {
           />
         </div>
 
-        {/* Right Panel - Input/Output */}
-        <div className="w-5/12 flex flex-col border-l border-gray-700 dark:border-gray-800">
+        {/* Right Panel - Input/Output — overflow-hidden stops border-b from visually bleeding */}
+        <div className="w-5/12 flex flex-col border-l border-gray-700 dark:border-gray-800 overflow-hidden">
           <div className="flex-1 flex flex-col border-b border-gray-700 dark:border-gray-800 p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Input</h2>
             <textarea
@@ -315,7 +287,6 @@ function Compiler() {
               }`}
             />
           </div>
-
           <div className="flex-1 flex flex-col p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Output</h2>
             {error ? (
@@ -346,11 +317,9 @@ function Compiler() {
 
         {/* History Side Panel */}
         {historyOpen && (
-          <div className={`w-80 flex-shrink-0 flex flex-col border-l transition-all duration-300 ${
-      theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-    }`}>
-
-            {/* Panel Header */}
+          <div className={`w-80 flex-shrink-0 flex flex-col border-l ${
+            theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
             <div className={`flex items-center justify-between p-4 border-b ${
               theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
             }`}>
@@ -362,8 +331,6 @@ function Compiler() {
                 <X size={18} />
               </button>
             </div>
-
-            {/* Panel Body */}
             <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
               {historyLoading ? (
                 <p className="text-sm text-gray-400 text-center mt-8">Loading history...</p>
@@ -377,7 +344,6 @@ function Compiler() {
                       theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
                     }`}
                   >
-                    {/* Card Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -393,15 +359,11 @@ function Compiler() {
                       </div>
                       <span className="text-xs text-gray-500">{formatTimeAgo(entry.executedAt)}</span>
                     </div>
-
-                    {/* Code Preview */}
-                    <pre className={`text-xs font-mono rounded p-2 overflow-hidden line-clamp-3 ${
+                    <pre className={`text-xs font-mono rounded p-2 overflow-hidden ${
                       theme === 'dark' ? 'bg-gray-950 text-gray-400' : 'bg-gray-100 text-gray-600'
                     }`} style={{ maxHeight: '60px' }}>
                       {entry.code.slice(0, 120)}{entry.code.length > 120 ? '...' : ''}
                     </pre>
-
-                    {/* Actions */}
                     <div className="flex items-center justify-between mt-1">
                       <button
                         onClick={() => handleRestore(entry)}
@@ -424,46 +386,70 @@ function Compiler() {
             </div>
           </div>
         )}
+      </div>
 
-        {/* Restore Confirmation Modal */}
-        {restoreConfirm && (
-  <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
-    <div className={`rounded-xl p-6 w-80 shadow-2xl ${
-      theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-    }`}>
-      <h3 className="font-semibold text-lg mb-2">Restore this code?</h3>
-      <p className="text-sm text-gray-400 mb-1">
-        {restoreConfirm.language} • {formatTimeAgo(restoreConfirm.executedAt)}
-      </p>
-      <pre className={`text-xs font-mono rounded p-3 mb-4 overflow-hidden ${
-        theme === 'dark' ? 'bg-gray-950 text-gray-400' : 'bg-gray-100 text-gray-600'
-      }`} style={{ maxHeight: '80px' }}>
-        {restoreConfirm.code.slice(0, 150)}...
-      </pre>
-      <p className="text-sm text-yellow-400 mb-4">
-        ⚠️ Your current code will be replaced.
-      </p>
-      <div className="flex gap-3">
-        <button
-          onClick={confirmRestore}
-          className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition"
-        >
-          Yes, Restore
+      {/* Restore Modal — fixed, centered, full code visible */}
+      {restoreConfirm && (
+  <div
+    style={{ backgroundColor: 'rgba(15, 23, 42, 1)' }}
+    className="fixed inset-0 z-50 flex items-center justify-center"
+    onClick={() => setRestoreConfirm(null)}
+  >
+    <div
+      style={{ backgroundColor: theme === 'dark' ? '#2d3748' : '#e2e8f0' }}
+      className="rounded-xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col overflow-hidden border border-gray-500"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Modal Header */}
+      <div style={{ borderBottom: '1px solid #4a5568' }} className="flex items-center justify-between px-6 py-4">
+        <div>
+          <h3 className="font-semibold text-lg">Restore this code?</h3>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {restoreConfirm.language} • {formatTimeAgo(restoreConfirm.executedAt)} • {restoreConfirm.status === 'success' ? '✅ Success' : '❌ Error'}
+          </p>
+        </div>
+        <button onClick={() => setRestoreConfirm(null)} className="hover:text-red-400 transition ml-4">
+          <X size={20} />
         </button>
-        <button
-          onClick={() => setRestoreConfirm(null)}
-          className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-            theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-          }`}
+      </div>
+
+      {/* Full Code — scrollable */}
+      <div className="px-6 py-4">
+        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Full Code</p>
+        <pre
+          style={{
+            backgroundColor: theme === 'dark' ? '#1a202c' : '#cbd5e0',
+            maxHeight: '340px',
+            color: theme === 'dark' ? '#e2e8f0' : '#1a202c'
+          }}
+          className="text-sm font-mono rounded-lg p-4 overflow-y-auto"
         >
-          Cancel
-        </button>
+          {restoreConfirm.code}
+        </pre>
+      </div>
+
+      {/* Warning + Actions */}
+      <div style={{ borderTop: '1px solid #4a5568' }} className="px-6 py-4 flex items-center justify-between">
+        <p className="text-sm text-yellow-400">⚠️ Your current editor code will be replaced.</p>
+        <div className="flex gap-3 ml-4">
+          <button
+            onClick={() => setRestoreConfirm(null)}
+            style={{ backgroundColor: theme === 'dark' ? '#4a5568' : '#a0aec0' }}
+            className="px-5 py-2 rounded-md text-sm font-medium transition hover:opacity-80"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmRestore}
+            className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition"
+          >
+            Yes, Restore
+          </button>
+        </div>
       </div>
     </div>
   </div>
 )}
-
-      </div>
 
       <Chatbot code={code} />
     </div>
