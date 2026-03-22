@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
-import { Sun, Moon, History, X, RotateCcw, Trash2 } from 'lucide-react';
+import { Sun, Moon, History, X, RotateCcw, Trash2, User, ChevronDown } from 'lucide-react';
 import { Navigate, useNavigate } from "react-router-dom";
 import Chatbot from "./Chatbot";
 
@@ -18,11 +18,24 @@ function Compiler() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [restoreConfirm, setRestoreConfirm] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   if (!token) return <Navigate to="/login" />;
+
+  // close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchHistory = async () => {
     setHistoryLoading(true);
@@ -41,6 +54,7 @@ function Compiler() {
   const toggleHistory = () => {
     if (!historyOpen) fetchHistory();
     setHistoryOpen((prev) => !prev);
+    setProfileMenuOpen(false);
   };
 
   const handleRestore = (entry) => setRestoreConfirm(entry);
@@ -179,84 +193,196 @@ function Compiler() {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
+  // ─── Shared inline styles ────────────────────────────────────
+
+  const headerBg = theme === 'dark' ? '#111827' : '#ffffff';
+  const pageBg = theme === 'dark' ? '#030712' : '#f9fafb';
+  const textColor = theme === 'dark' ? '#f3f4f6' : '#111827';
+  const borderColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+  const panelBg = theme === 'dark' ? '#111827' : '#ffffff';
+  const inputBg = theme === 'dark' ? '#030712' : '#ffffff';
+  const cardBg = theme === 'dark' ? '#1f2937' : '#f9fafb';
+  const mutedText = theme === 'dark' ? '#9ca3af' : '#6b7280';
+  const dropdownBg = theme === 'dark' ? '#1f2937' : '#ffffff';
+
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'} flex flex-col transition-colors duration-300`}>
+    <div style={{ minHeight: '100vh', backgroundColor: pageBg, color: textColor, display: 'flex', flexDirection: 'column' }}>
 
       {/* Header */}
-      <header className={`${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-b p-4 flex items-center justify-between shadow-sm`}>
-        <h1 className="text-2xl font-bold">
-          <span className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}>
-            My Online Compiler
-          </span>
+      <header style={{
+        backgroundColor: headerBg,
+        borderBottom: `1px solid ${borderColor}`,
+        padding: '12px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: theme === 'dark' ? '#60a5fa' : '#2563eb' }}>
+          My Online Compiler
         </h1>
-        <div className="flex items-center gap-6">
-          <button onClick={toggleTheme} className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition`}>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: textColor, padding: '6px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center'
+            }}
+          >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
+
+          {/* Language select */}
           <select
             value={language}
             onChange={handleLanguageChange}
-            className={`px-4 py-2 rounded-md border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              theme === 'dark' ? 'bg-gray-800 border-gray-700 text-blue-300' : 'bg-white border-gray-300 text-blue-700'
-            }`}
+            style={{
+              padding: '6px 12px', borderRadius: '6px',
+              border: `1px solid ${borderColor}`,
+              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+              color: theme === 'dark' ? '#93c5fd' : '#1d4ed8',
+              fontSize: '13px', fontWeight: 500, cursor: 'pointer'
+            }}
           >
             <option value="cpp">C++</option>
             <option value="python">Python</option>
             <option value="java">Java</option>
           </select>
+
+          {/* Run button */}
           <button
             onClick={handleRun}
             disabled={loading}
-            className={`px-8 py-2.5 rounded-md font-semibold transition-all shadow-md ${
-              loading ? 'bg-gray-600 cursor-not-allowed'
-              : theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-            }`}
+            style={{
+              padding: '8px 24px', borderRadius: '6px', border: 'none',
+              fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              backgroundColor: loading ? '#4b5563' : '#2563eb',
+              color: 'white', fontSize: '14px'
+            }}
           >
             {loading ? 'Running...' : 'Run'}
           </button>
+
+          {/* Download */}
           <button
-            onClick={toggleHistory}
-            className={`flex items-center gap-2 px-5 py-2 rounded-md font-medium transition ${
-              historyOpen ? 'bg-purple-600 text-white'
-              : theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-              : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-            }`}
+            onClick={handleDownload}
+            style={{
+              padding: '8px 16px', borderRadius: '6px', border: `1px solid ${borderColor}`,
+              backgroundColor: 'transparent', color: textColor,
+              cursor: 'pointer', fontSize: '13px', fontWeight: 500
+            }}
           >
-            <History size={16} />
-            History
+            Download
           </button>
-          <button
-            onClick={handleLogout}
-            className={`px-5 py-2 rounded-md font-medium transition ${
-              theme === "dark" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-red-500 hover:bg-red-600 text-white"
-            }`}
-          >
-            Logout
-          </button>
-          <button onClick={handleDownload}>Download Code</button>
-          <button
-            onClick={() => (window.location.href = "/save")}
-            className="px-6 py-2 bg-gray-600 text-white rounded-md"
-          >
-            My Snippets
-          </button>
+
+          {/* Save */}
           <button
             onClick={handleSave}
-            className={`px-6 py-2 rounded-md font-semibold ${
-              theme === "dark" ? "bg-yellow-600 hover:bg-yellow-700 text-white" : "bg-yellow-500 hover:bg-yellow-600 text-white"
-            }`}
+            style={{
+              padding: '8px 16px', borderRadius: '6px', border: 'none',
+              backgroundColor: theme === 'dark' ? '#d97706' : '#f59e0b',
+              color: 'white', cursor: 'pointer', fontSize: '13px', fontWeight: 600
+            }}
           >
             Save
           </button>
+
+          {/* Profile dropdown */}
+          <div ref={profileMenuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '8px 14px', borderRadius: '6px', border: `1px solid ${borderColor}`,
+                backgroundColor: profileMenuOpen
+                  ? (theme === 'dark' ? '#374151' : '#f3f4f6')
+                  : 'transparent',
+                color: textColor, cursor: 'pointer', fontSize: '13px', fontWeight: 500
+              }}
+            >
+              <User size={16} />
+              My Profile
+              <ChevronDown size={14} style={{
+                transform: profileMenuOpen ? 'rotate(180deg)' : 'rotate(0)',
+                transition: 'transform 0.2s'
+              }} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {profileMenuOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                backgroundColor: dropdownBg,
+                border: `1px solid ${borderColor}`,
+                borderRadius: '8px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                minWidth: '180px',
+                zIndex: 100,
+                overflow: 'hidden'
+              }}>
+
+                {/* History */}
+                <button
+                  onClick={toggleHistory}
+                  style={{
+                    width: '100%', padding: '10px 16px',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    background: historyOpen
+                      ? (theme === 'dark' ? '#7c3aed' : '#ede9fe')
+                      : 'none',
+                    border: 'none',
+                    borderBottom: `1px solid ${borderColor}`,
+                    color: historyOpen ? (theme === 'dark' ? 'white' : '#5b21b6') : textColor,
+                    cursor: 'pointer', fontSize: '13px', textAlign: 'left'
+                  }}
+                >
+                  <History size={15} />
+                  Execution History
+                </button>
+
+                {/* My Snippets */}
+                <button
+                  onClick={() => { window.location.href = "/save"; setProfileMenuOpen(false); }}
+                  style={{
+                    width: '100%', padding: '10px 16px',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    background: 'none', border: 'none',
+                    borderBottom: `1px solid ${borderColor}`,
+                    color: textColor, cursor: 'pointer',
+                    fontSize: '13px', textAlign: 'left'
+                  }}
+                >
+                  📁 My Snippets
+                </button>
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%', padding: '10px 16px',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    background: 'none', border: 'none',
+                    color: '#f87171', cursor: 'pointer',
+                    fontSize: '13px', textAlign: 'left'
+                  }}
+                >
+                  🚪 Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
         {/* Code Editor */}
-        <div className="flex-1 border-r border-gray-700 dark:border-gray-800">
+        <div style={{ flex: 1, borderRight: `1px solid ${borderColor}` }}>
           <Editor
             height="100%"
             language={language === 'cpp' ? 'cpp' : language}
@@ -274,38 +400,67 @@ function Compiler() {
           />
         </div>
 
-        {/* Right Panel - Input/Output — overflow-hidden stops border-b from visually bleeding */}
-        <div className="w-5/12 flex flex-col border-l border-gray-700 dark:border-gray-800 overflow-hidden">
-          <div className="flex-1 flex flex-col border-b border-gray-700 dark:border-gray-800 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Input</h2>
+        {/* Right Panel - Input/Output */}
+        <div style={{
+          width: '41.666%', display: 'flex', flexDirection: 'column',
+          borderLeft: `1px solid ${borderColor}`, overflow: 'hidden'
+        }}>
+          {/* Input */}
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            borderBottom: `1px solid ${borderColor}`, padding: '24px'
+          }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 600 }}>Input</h2>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={`Enter your input here (stdin)\nExample:\n45\n19`}
-              className={`flex-1 w-full p-4 rounded-lg border font-mono text-sm resize-none overflow-auto focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-900'
-              }`}
+              style={{
+                flex: 1, width: '100%', padding: '14px',
+                borderRadius: '8px', border: `1px solid ${borderColor}`,
+                backgroundColor: inputBg, color: textColor,
+                fontFamily: 'monospace', fontSize: '13px',
+                resize: 'none', outline: 'none', boxSizing: 'border-box'
+              }}
             />
           </div>
-          <div className="flex-1 flex flex-col p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Output</h2>
+
+          {/* Output */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px' }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 600 }}>Output</h2>
             {error ? (
-              <div className="flex-1 p-4 rounded-lg border font-mono text-sm overflow-auto bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200">
+              <div style={{
+                flex: 1, padding: '14px', borderRadius: '8px',
+                border: '1px solid #ef4444', backgroundColor: theme === 'dark' ? 'rgba(239,68,68,0.1)' : '#fef2f2',
+                color: theme === 'dark' ? '#fca5a5' : '#991b1b',
+                fontFamily: 'monospace', fontSize: '13px', overflow: 'auto'
+              }}>
                 {error}
               </div>
             ) : (
               <>
-                <pre className={`flex-1 w-full p-4 rounded-lg border font-mono text-sm whitespace-pre-wrap overflow-auto ${
-                  theme === 'dark' ? 'bg-gray-900 border-gray-700 text-blue-200' : 'bg-white border-gray-300 text-blue-800'
-                }`}>
+                <pre style={{
+                  flex: 1, width: '100%', padding: '14px',
+                  borderRadius: '8px', border: `1px solid ${borderColor}`,
+                  backgroundColor: inputBg,
+                  color: theme === 'dark' ? '#93c5fd' : '#1e40af',
+                  fontFamily: 'monospace', fontSize: '13px',
+                  whiteSpace: 'pre-wrap', overflow: 'auto', margin: 0,
+                  boxSizing: 'border-box'
+                }}>
                   {output || (loading ? 'Executing code...' : 'Run your code to see output')}
                 </pre>
                 {stderr && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Stderr:</h3>
-                    <pre className={`p-4 rounded-lg border font-mono text-sm whitespace-pre-wrap overflow-auto ${
-                      theme === 'dark' ? 'bg-red-950/40 border-red-700 text-red-200' : 'bg-red-50 border-red-300 text-red-800'
-                    }`}>
+                  <div style={{ marginTop: '16px' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: 500, color: '#f87171', marginBottom: '8px' }}>Stderr:</h3>
+                    <pre style={{
+                      padding: '14px', borderRadius: '8px',
+                      border: `1px solid #ef4444`,
+                      backgroundColor: theme === 'dark' ? 'rgba(239,68,68,0.05)' : '#fef2f2',
+                      color: theme === 'dark' ? '#fca5a5' : '#991b1b',
+                      fontFamily: 'monospace', fontSize: '13px',
+                      whiteSpace: 'pre-wrap', overflow: 'auto', margin: 0
+                    }}>
                       {stderr}
                     </pre>
                   </div>
@@ -317,67 +472,92 @@ function Compiler() {
 
         {/* History Side Panel */}
         {historyOpen && (
-          <div className={`w-80 flex-shrink-0 flex flex-col border-l ${
-            theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-          }`}>
-            <div className={`flex items-center justify-between p-4 border-b ${
-              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-            }`}>
-              <div className="flex items-center gap-2">
-                <History size={16} className="text-purple-400" />
-                <h2 className="font-semibold">Execution History</h2>
+          <div style={{
+            width: '320px', flexShrink: 0, display: 'flex', flexDirection: 'column',
+            borderLeft: `1px solid ${borderColor}`, backgroundColor: panelBg
+          }}>
+            {/* Panel Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 16px', borderBottom: `1px solid ${borderColor}`
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <History size={16} style={{ color: '#a78bfa' }} />
+                <h2 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Execution History</h2>
               </div>
-              <button onClick={() => setHistoryOpen(false)} className="hover:text-red-400 transition">
+              <button
+                onClick={() => setHistoryOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: mutedText }}
+              >
                 <X size={18} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+
+            {/* Panel Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {historyLoading ? (
-                <p className="text-sm text-gray-400 text-center mt-8">Loading history...</p>
+                <p style={{ fontSize: '13px', color: mutedText, textAlign: 'center', marginTop: '32px' }}>Loading history...</p>
               ) : history.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center mt-8">No executions yet. Hit Run!</p>
+                <p style={{ fontSize: '13px', color: mutedText, textAlign: 'center', marginTop: '32px' }}>No executions yet. Hit Run!</p>
               ) : (
                 history.map((entry) => (
-                  <div
-                    key={entry._id}
-                    className={`rounded-lg border p-3 flex flex-col gap-2 ${
-                      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          entry.language === 'python' ? 'bg-yellow-500/20 text-yellow-400'
-                          : entry.language === 'java' ? 'bg-orange-500/20 text-orange-400'
-                          : 'bg-blue-500/20 text-blue-400'
-                        }`}>
+                  <div key={entry._id} style={{
+                    borderRadius: '8px', border: `1px solid ${borderColor}`,
+                    padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
+                    backgroundColor: cardBg
+                  }}>
+                    {/* Card Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px',
+                          backgroundColor: entry.language === 'python' ? 'rgba(234,179,8,0.15)'
+                            : entry.language === 'java' ? 'rgba(249,115,22,0.15)'
+                            : 'rgba(59,130,246,0.15)',
+                          color: entry.language === 'python' ? '#fbbf24'
+                            : entry.language === 'java' ? '#fb923c'
+                            : '#60a5fa'
+                        }}>
                           {entry.language}
                         </span>
-                        <span className={`text-xs ${entry.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                        <span style={{ fontSize: '11px', color: entry.status === 'success' ? '#4ade80' : '#f87171' }}>
                           {entry.status === 'success' ? '✅ Success' : '❌ Error'}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-500">{formatTimeAgo(entry.executedAt)}</span>
+                      <span style={{ fontSize: '11px', color: mutedText }}>{formatTimeAgo(entry.executedAt)}</span>
                     </div>
-                    <pre className={`text-xs font-mono rounded p-2 overflow-hidden ${
-                      theme === 'dark' ? 'bg-gray-950 text-gray-400' : 'bg-gray-100 text-gray-600'
-                    }`} style={{ maxHeight: '60px' }}>
+
+                    {/* Code Preview */}
+                    <pre style={{
+                      fontSize: '11px', fontFamily: 'monospace',
+                      borderRadius: '4px', padding: '6px 8px',
+                      backgroundColor: theme === 'dark' ? '#030712' : '#f3f4f6',
+                      color: mutedText, maxHeight: '55px', overflow: 'hidden', margin: 0
+                    }}>
                       {entry.code.slice(0, 120)}{entry.code.length > 120 ? '...' : ''}
                     </pre>
-                    <div className="flex items-center justify-between mt-1">
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <button
                         onClick={() => handleRestore(entry)}
-                        className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '4px',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: '12px', color: '#a78bfa'
+                        }}
                       >
-                        <RotateCcw size={12} />
-                        Restore
+                        <RotateCcw size={12} /> Restore
                       </button>
                       <button
                         onClick={() => handleDeleteHistory(entry._id)}
-                        className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '4px',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: '12px', color: '#f87171'
+                        }}
                       >
-                        <Trash2 size={12} />
-                        Delete
+                        <Trash2 size={12} /> Delete
                       </button>
                     </div>
                   </div>
@@ -388,68 +568,95 @@ function Compiler() {
         )}
       </div>
 
-      {/* Restore Modal — fixed, centered, full code visible */}
+      {/* Restore Modal */}
       {restoreConfirm && (
-  <div
-    style={{ backgroundColor: 'rgba(15, 23, 42, 1)' }}
-    className="fixed inset-0 z-50 flex items-center justify-center"
-    onClick={() => setRestoreConfirm(null)}
-  >
-    <div
-      style={{ backgroundColor: theme === 'dark' ? '#2d3748' : '#e2e8f0' }}
-      className="rounded-xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col overflow-hidden border border-gray-500"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Modal Header */}
-      <div style={{ borderBottom: '1px solid #4a5568' }} className="flex items-center justify-between px-6 py-4">
-        <div>
-          <h3 className="font-semibold text-lg">Restore this code?</h3>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {restoreConfirm.language} • {formatTimeAgo(restoreConfirm.executedAt)} • {restoreConfirm.status === 'success' ? '✅ Success' : '❌ Error'}
-          </p>
-        </div>
-        <button onClick={() => setRestoreConfirm(null)} className="hover:text-red-400 transition ml-4">
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Full Code — scrollable */}
-      <div className="px-6 py-4">
-        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Full Code</p>
-        <pre
+        <div
           style={{
-            backgroundColor: theme === 'dark' ? '#1a202c' : '#cbd5e0',
-            maxHeight: '340px',
-            color: theme === 'dark' ? '#e2e8f0' : '#1a202c'
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: 'rgba(15, 23, 42, 0.97)'
           }}
-          className="text-sm font-mono rounded-lg p-4 overflow-y-auto"
+          onClick={() => setRestoreConfirm(null)}
         >
-          {restoreConfirm.code}
-        </pre>
-      </div>
+          <div
+            style={{
+              backgroundColor: theme === 'dark' ? '#2d3748' : '#e2e8f0',
+              border: '1px solid #4a5568', borderRadius: '12px',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+              width: '100%', maxWidth: '700px', margin: '0 16px',
+              display: 'flex', flexDirection: 'column', overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 24px', borderBottom: '1px solid #4a5568'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Restore this code?</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#9ca3af' }}>
+                  {restoreConfirm.language} • {formatTimeAgo(restoreConfirm.executedAt)} • {restoreConfirm.status === 'success' ? '✅ Success' : '❌ Error'}
+                </p>
+              </div>
+              <button
+                onClick={() => setRestoreConfirm(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', marginLeft: '16px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-      {/* Warning + Actions */}
-      <div style={{ borderTop: '1px solid #4a5568' }} className="px-6 py-4 flex items-center justify-between">
-        <p className="text-sm text-yellow-400">⚠️ Your current editor code will be replaced.</p>
-        <div className="flex gap-3 ml-4">
-          <button
-            onClick={() => setRestoreConfirm(null)}
-            style={{ backgroundColor: theme === 'dark' ? '#4a5568' : '#a0aec0' }}
-            className="px-5 py-2 rounded-md text-sm font-medium transition hover:opacity-80"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={confirmRestore}
-            className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition"
-          >
-            Yes, Restore
-          </button>
+            {/* Full Code */}
+            <div style={{ padding: '16px 24px' }}>
+              <p style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Full Code
+              </p>
+              <pre style={{
+                backgroundColor: theme === 'dark' ? '#1a202c' : '#cbd5e0',
+                color: theme === 'dark' ? '#e2e8f0' : '#1a202c',
+                borderRadius: '8px', padding: '16px', fontSize: '13px',
+                fontFamily: 'monospace', overflowY: 'auto', maxHeight: '340px', margin: 0
+              }}>
+                {restoreConfirm.code}
+              </pre>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 24px', borderTop: '1px solid #4a5568'
+            }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#fbbf24' }}>
+                ⚠️ Your current editor code will be replaced.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', marginLeft: '16px' }}>
+                <button
+                  onClick={() => setRestoreConfirm(null)}
+                  style={{
+                    padding: '8px 20px', borderRadius: '6px', fontSize: '13px',
+                    fontWeight: 500, cursor: 'pointer', border: 'none',
+                    backgroundColor: theme === 'dark' ? '#4a5568' : '#a0aec0',
+                    color: theme === 'dark' ? '#e2e8f0' : '#1a202c'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRestore}
+                  style={{
+                    padding: '8px 20px', borderRadius: '6px', fontSize: '13px',
+                    fontWeight: 500, cursor: 'pointer', border: 'none',
+                    backgroundColor: '#7c3aed', color: 'white'
+                  }}
+                >
+                  Yes, Restore
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       <Chatbot code={code} />
     </div>
