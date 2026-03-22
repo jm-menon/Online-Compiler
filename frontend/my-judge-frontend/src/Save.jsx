@@ -1,74 +1,136 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function Snippets() {
-  const [snippets, setSnippets] = useState([]);
+function Save() {
+  const [savedFiles, setSavedFiles] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({ filename: "", language: "", code: "" });
   const token = localStorage.getItem("token");
 
-  const fetchSnippets = async () => {
+  const fetchSavedFiles = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/save", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setSnippets(res.data);
+      setSavedFiles(res.data);
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    fetchSnippets();
+    fetchSavedFiles();
   }, []);
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8080/api/save/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      setSnippets((prev) => prev.filter((s) => s._id !== id));
+      setSavedFiles((prev) => prev.filter((f) => f._id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleLoad = (snippet) => {
-    // Save to localStorage so Compiler can pick it up
-    localStorage.setItem("loadedCode", snippet.code);
-    localStorage.setItem("loadedLanguage", snippet.language);
-
+  const handleLoad = (savedFile) => {
+    localStorage.setItem("loadedCode", savedFile.code);
+    localStorage.setItem("loadedLanguage", savedFile.language);
     window.location.href = "/compile";
+  };
+
+  const startEdit = (savedFile) => {
+    setEditingId(savedFile._id);
+    setEditForm({
+      filename: savedFile.filename,
+      language: savedFile.language,
+      code: savedFile.code
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({ filename: "", language: "", code: "" });
+  };
+
+  const handleEdit = async (id) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/save/${id}`,
+        editForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSavedFiles((prev) => prev.map((f) => f._id === id ? response.data : f));
+      setEditingId(null);
+      setEditForm({ filename: "", language: "", code: "" });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div style={styles.container}>
-      <h1>My Snippets</h1>
-
-      {snippets.length === 0 ? (
-        <p>No snippets saved yet.</p>
+      <h1>My Saved Files</h1>
+      
+      {savedFiles.length === 0 ? (
+        <p>No files saved yet.</p>
       ) : (
         <div style={styles.grid}>
-          {snippets.map((snippet) => (
-            <div key={snippet._id} style={styles.card}>
-              <h3>{snippet.filename}</h3>
-              <p>{snippet.language}</p>
+          {savedFiles.map((savedFile) => (
+            <div key={savedFile._id} style={styles.card}>
 
-              <div style={styles.actions}>
-                <button onClick={() => handleLoad(snippet)}>
-                  Open
-                </button>
+              {editingId === savedFile._id ? (
+                // edit mode
+                <>
+                  <input
+                    style={styles.input}
+                    value={editForm.filename}
+                    onChange={(e) => setEditForm({ ...editForm, filename: e.target.value })}
+                    placeholder="Filename"
+                  />
+                  <input
+                    style={styles.input}
+                    value={editForm.language}
+                    onChange={(e) => setEditForm({ ...editForm, language: e.target.value })}
+                    placeholder="Language"
+                  />
+                  <textarea
+                    style={styles.textarea}
+                    value={editForm.code}
+                    onChange={(e) => setEditForm({ ...editForm, code: e.target.value })}
+                    placeholder="Code"
+                  />
+                  <div style={styles.actions}>
+                    <button onClick={() => handleEdit(savedFile._id)}>
+                      Save
+                    </button>
+                    <button onClick={cancelEdit}>
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // view mode
+                <>
+                  <h3>{savedFile.filename}</h3>
+                  <p>{savedFile.language}</p>
+                  <div style={styles.actions}>
+                    <button onClick={() => handleLoad(savedFile)}>
+                      Open
+                    </button>
+                    <button onClick={() => startEdit(savedFile)}>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(savedFile._id)}
+                      style={{ background: "red", color: "white" }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
 
-                <button
-                  onClick={() => handleDelete(snippet._id)}
-                  style={{ background: "red", color: "white" }}
-                >
-                  Delete
-                </button>
-              </div>
             </div>
           ))}
         </div>
@@ -78,24 +140,16 @@ function Snippets() {
 }
 
 const styles = {
-  container: {
-    padding: "30px"
-  },
+  container: { padding: "30px" },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
     gap: "20px"
   },
-  card: {
-    padding: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "8px"
-  },
-  actions: {
-    marginTop: "10px",
-    display: "flex",
-    gap: "10px"
-  }
+  card: { padding: "15px", border: "1px solid #ddd", borderRadius: "8px" },
+  actions: { marginTop: "10px", display: "flex", gap: "10px" },
+  input: { display: "block", width: "100%", marginBottom: "8px", padding: "6px" },
+  textarea: { display: "block", width: "100%", height: "100px", marginBottom: "8px", padding: "6px" }
 };
 
-export default Snippets;
+export default Save;
