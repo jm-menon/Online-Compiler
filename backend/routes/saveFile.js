@@ -4,9 +4,10 @@ const {saveFile, findFile, editFile, deleteFile, showAllFile}= require('../contr
 const authMiddleware= require('../middleware/authMiddleware');
 
 router.post("/", authMiddleware, saveFile);
+router.get("/", authMiddleware, showAllFile);
 router.get("/:id", authMiddleware, findFile);
 router.put("/:id", authMiddleware, editFile);
 router.delete("/:id", authMiddleware, deleteFile);
-router.get("/", authMiddleware, showAllFile);
+
 
 module.exports = router;

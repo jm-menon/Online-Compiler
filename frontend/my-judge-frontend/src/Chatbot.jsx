@@ -79,24 +79,42 @@ function Chatbot({ code }) {
           </div>
 
           <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "10px"
-            }}
-          >
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                style={{
-                  textAlign: m.sender === "user" ? "right" : "left",
-                  marginBottom: "8px"
-                }}
-              >
-                {m.text}
-              </div>
-            ))}
-          </div>
+  style={{
+    flex: 1,
+    overflowY: "auto",
+    padding: "10px"
+  }}
+>
+  {messages.map((m, i) => (
+    <div
+      key={i}
+      style={{
+        display: "flex",
+        justifyContent: m.sender === "user" ? "flex-end" : "flex-start",
+        marginBottom: "10px" // ✅ spacing between bubbles
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "75%",
+          padding: "8px 12px",
+          borderRadius:
+            m.sender === "user"
+              ? "12px 12px 0 12px"
+              : "12px 12px 12px 0",
+          background:
+            m.sender === "user" ? "#2563eb" : "#f1f5f9",
+          color: m.sender === "user" ? "white" : "black",
+          fontSize: "14px",
+          wordBreak: "break-word",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+        }}
+      >
+        {m.text}
+      </div>
+    </div>
+  ))}
+</div>
 
           <div style={{ display: "flex", borderTop: "1px solid #ddd" }}>
             <input

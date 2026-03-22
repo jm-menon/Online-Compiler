@@ -1,4 +1,4 @@
-const jwt= require('jsonwebtoken');
+/*const jwt= require('jsonwebtoken');
 const User= require('../models/userSchema')
 const bcrypt= require('bcrypt');
 
@@ -62,6 +62,63 @@ exports.loginUser= async (req, res)=>{
     }catch(err){
         console.error(err);
         res.status(500).json({success: false, error:'Server error'});
+    }
+}*/
+
+const jwt = require('jsonwebtoken');
+const getUser = require('../models/userSchema'); // CHANGED: was `User`, now `getUser`
+const bcrypt = require('bcrypt');
+
+exports.registerUser = async (req, res) => {
+    const { username, email, password } = req.body;
+    const User = getUser(); // ADDED: call the function to get the actual model
+
+    try {
+        if (await User.findOne({ email })) {
+            return res.status(400).json({ success: false, error: 'Email already taken' });
+        }
+        if (await User.findOne({ username })) {
+            return res.status(400).json({ success: false, error: 'Username already taken' });
+        }
+        if (!username || !email || !password) {
+            return res.status(400).json({ success: false, error: 'All fields are mandatory' })
+        }
+        if (password.length < 10) {
+            return res.status(400).json({ success: false, error: 'Password must be at least 10 characters long' })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, email, password: hashedPassword });
+        await newUser.save();
+
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '10min' });
+        res.status(201).json({ success: true, message: "user registered successfully", token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+}
+
+exports.loginUser = async (req, res) => {
+    const { username, password } = req.body;
+    const User = getUser(); // ADDED: call the function to get the actual model
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(400).json({ success: false, error: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, error: "Invalid credentials" });
+        }
+
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10min' });
+        res.status(200).json({ success: true, message: "user logged in successfully", token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 }
        

@@ -54,12 +54,12 @@ function Snippets() {
         <div style={styles.grid}>
           {snippets.map((snippet) => (
             <div key={snippet._id} style={styles.card}>
-              <h3>{snippet.title}</h3>
+              <h3>{snippet.filename}</h3>
               <p>{snippet.language}</p>
 
               <div style={styles.actions}>
                 <button onClick={() => handleLoad(snippet)}>
-                  Load
+                  Open
                 </button>
 
                 <button

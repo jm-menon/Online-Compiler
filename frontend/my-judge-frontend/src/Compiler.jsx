@@ -43,15 +43,15 @@ function Compiler() {
 };
 
 const handleSave = async () => {
-  const title = prompt("Enter snippet title:");
+  const filename = prompt("Enter snippet filename:");
 
-  if (!title) return;
+  if (!filename) return;
 
   try {
     await axios.post(
       "http://localhost:8080/api/save",
       {
-        title,
+        filename,
         language,
         code
       },

@@ -33,7 +33,7 @@ connectDB_saveFiles(); // Connect to MongoDB for save files
 // Allow frontend origin (Vite dev server)
 app.use(cors({
   origin: 'http://localhost:5173',          // ← your frontend URL
-  methods: ['GET', 'POST', 'OPTIONS'],      // allow POST
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],      // allow POST
   allowedHeaders: ['Content-Type', 'Authorization'],         // allow JSON body and AIs bearer token
 }));
 
