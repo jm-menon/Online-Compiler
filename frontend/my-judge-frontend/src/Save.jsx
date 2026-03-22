@@ -97,6 +97,7 @@ const handleSearch = async (e) => {
           onChange={handleSearch}
           placeholder="Search by filename..."
         />
+        <br />
       {savedFiles.length === 0 ? (
         <p>No files saved yet.</p>
       ) : (

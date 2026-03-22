@@ -14,6 +14,7 @@ const authRoutes = require('./routes/auth'); // Import auth routes
 const aiRoutes = require('./routes/aiRoutes'); // Import AI routes
 const downloadFileRoutes = require('./routes/downloadFile'); // Import download file routes
 const saveFileRoutes = require('./routes/saveFile'); // Import save file routes
+const execHistoryRoutes = require('./routes/execHistory'); // Import execution history routes
 
 const app = express();
 const port = 8080;
@@ -45,6 +46,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/ai', aiRoutes);
+app.use('/api/history', execHistoryRoutes);
 app.use('/api/download', downloadFileRoutes);
 app.use('/api/save', saveFileRoutes);
 app.use('/api/auth', authRoutes);
