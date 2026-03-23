@@ -28,7 +28,7 @@ function Save() {
       return;
     }
     try {
-      const res = await axios.get(`http://localhost:8080/api/save/search?query=${value}`, {
+      const res = await axios.get(`http://localhost:8081/api/save/search?query=${value}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSavedFiles(res.data);
@@ -39,7 +39,7 @@ function Save() {
 
   const fetchSavedFiles = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/save", {
+      const res = await axios.get("http://localhost:8081/api/save", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSavedFiles(res.data);
@@ -52,7 +52,7 @@ function Save() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/save/${id}`, {
+      await axios.delete(`http://localhost:8081/api/save/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSavedFiles((prev) => prev.filter((f) => f._id !== id));
@@ -80,7 +80,7 @@ function Save() {
   const handleEdit = async (id) => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/api/save/${id}`,
+        `http://localhost:8081/api/save/${id}`,
         editForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -13,7 +13,7 @@ function Chatbot({ code }) {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const res = await axios.post("http://localhost:8080/api/ai", {
+      const res = await axios.post("http://localhost:8081/api/ai", {
         code: code || "// No code provided",
         prompt: message
       });
