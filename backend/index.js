@@ -17,13 +17,13 @@ const saveFileRoutes = require('./routes/saveFile'); // Import save file routes
 const execHistoryRoutes = require('./routes/execHistory'); // Import execution history routes
 
 const app = express();
-const port = 8081;
+const port = process.env.PORT;
 const { connectDB_users, connectDB_saveFiles } = require('./connectDB');
 
 const start = async () => {
     await connectDB_users();
     await connectDB_saveFiles();
-    app.listen(3000, () => console.log('Server running'));
+    app.listen(port, () => console.log(`Server running on port ${port}`));
 }
 
 start();
