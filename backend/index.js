@@ -41,13 +41,12 @@ start();
 ////
 
 
-
-connectDB_users(); // Connect to MongoDB
-connectDB_saveFiles(); // Connect to MongoDB for save files
-
 // Allow frontend origin (Vite dev server)
 app.use(cors({
-  origin: 'http://localhost:5173',          // ← your frontend URL
+  origin: [
+  'http://localhost:5173',
+  'https://your-frontend.onrender.com'
+],         // ← your frontend URL
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],      // allow POST
   allowedHeaders: ['Content-Type', 'Authorization'],         // allow JSON body and AIs bearer token
 }));
@@ -132,8 +131,3 @@ app.post('/run', async (req, res) => {
 
 
 cleanupOldFiles(); // Run once on server start
-
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
