@@ -17,16 +17,30 @@ const saveFileRoutes = require('./routes/saveFile'); // Import save file routes
 const execHistoryRoutes = require('./routes/execHistory'); // Import execution history routes
 
 const app = express();
-const port = process.env.PORT;
+
+////config for render to allow render to do dynamic port injection
+const PORT = process.env.PORT || 8081;
+
 const { connectDB_users, connectDB_saveFiles } = require('./connectDB');
 
 const start = async () => {
-    await connectDB_users();
-    await connectDB_saveFiles();
-    app.listen(port, () => console.log(`Server running on port ${port}`));
-}
+    try {
+        await connectDB_users();
+        await connectDB_saveFiles();
+
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+};
 
 start();
+////
+
+
 
 connectDB_users(); // Connect to MongoDB
 connectDB_saveFiles(); // Connect to MongoDB for save files
