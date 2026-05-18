@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Sun, Moon, History, X, RotateCcw, Trash2, User, ChevronDown } from 'lucide-react';
 import { Navigate, useNavigate } from "react-router-dom";
 import Chatbot from "./Chatbot";
+import API from "./api";
 
 function Compiler() {
   const [language, setLanguage] = useState('cpp');
@@ -40,7 +41,7 @@ function Compiler() {
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
-      const res = await axios.get("http://localhost:8081/api/history", {
+      const res = await API.get(`/api/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(res.data);
@@ -68,7 +69,7 @@ function Compiler() {
 
   const handleDeleteHistory = async (id) => {
     try {
-      await axios.delete(`http://localhost:8081/api/history/${id}`, {
+      await API.delete(`/api/history/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory((prev) => prev.filter((h) => h._id !== id));
@@ -83,8 +84,8 @@ function Compiler() {
   };
 
   const handleDownload = async () => {
-    const response = await axios.post(
-      "http://localhost:8081/api/download",
+    const response = await API.post(
+      `/api/download`,
       { code, language },
       { responseType: "blob" }
     );
@@ -98,8 +99,8 @@ function Compiler() {
     const filename = prompt("Enter snippet filename:");
     if (!filename) return;
     try {
-      await axios.post(
-        "http://localhost:8081/api/save",
+      await API.post(
+        `/api/save`,
         { filename, language, code },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -116,20 +117,20 @@ function Compiler() {
     setStderr('');
     setError('');
     try {
-      const response = await axios.post('http://localhost:8081/run', {
+      const response = await API.post(`/run`, {
         language, code, input: input.trim()
       });
       const data = response.data;
       if (data.success) {
         setOutput(data.output || '(no output)');
         setStderr(data.stderr || '');
-        await axios.post("http://localhost:8081/api/history",
+        await API.post(`/api/history`,
           { code, language, output: data.output, status: 'success' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         setError(data.error || 'Unknown error');
-        await axios.post("http://localhost:8081/api/history",
+        await axios.post(`/api/history`,
           { code, language, output: data.error, status: 'error' },
           { headers: { Authorization: `Bearer ${token}` } }
         );

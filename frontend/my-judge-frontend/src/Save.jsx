@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Search, Pencil, Trash2, FolderOpen, X, Check, Code, ArrowLeft } from "lucide-react";
+import API from "./api";
 
 function Save() {
   const [savedFiles, setSavedFiles] = useState([]);
@@ -28,9 +29,7 @@ function Save() {
       return;
     }
     try {
-      const res = await axios.get(`http://localhost:8081/api/save/search?query=${value}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await API.get(`/api/save/search?query=${value}`);
       setSavedFiles(res.data);
     } catch (err) {
       console.error(err);
@@ -39,7 +38,7 @@ function Save() {
 
   const fetchSavedFiles = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/api/save", {
+      const res = await API.get(`/api/save`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSavedFiles(res.data);
@@ -52,7 +51,7 @@ function Save() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8081/api/save/${id}`, {
+      await API.delete(`/api/save/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSavedFiles((prev) => prev.filter((f) => f._id !== id));
@@ -79,8 +78,8 @@ function Save() {
 
   const handleEdit = async (id) => {
     try {
-      const response = await axios.put(
-        `http://localhost:8081/api/save/${id}`,
+      const response = await API.put(
+        `/api/save/${id}`,
         editForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
