@@ -1,9 +1,3 @@
 
 node_modules
-codes/cpp
-codes/py
-codes/java
-outputs/cpp
-outputs/py
-outputs/java
 .env
