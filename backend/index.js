@@ -45,7 +45,7 @@ start();
 app.use(cors({
   origin: [
   'http://localhost:5173',
-  'https://your-frontend.onrender.com'
+  'https://my-online-compiler-fcis.onrender.com'
 ],         // ← your frontend URL
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],      // allow POST
   allowedHeaders: ['Content-Type', 'Authorization'],         // allow JSON body and AIs bearer token
