@@ -5,11 +5,12 @@ const path = require('path');
 
 const cleanupOldFiles = async () => {
     const dirs = [
-        //path.join(__dirname, '../outputs/cpp'),
-        '/Users/jahnavimenon/Desktop/o/backend/outputs/cpp',
-        '/Users/jahnavimenon/Desktop/o/backend/outputs/java',
-        //path.join(__dirname, '../outputs/java'),
-        '/Users/jahnavimenon/Desktop/o/backend/outputs/python',
+        path.join(__dirname, '../outputs/cpp'),
+        //'/Users/jahnavimenon/Desktop/o/backend/outputs/cpp',
+        //'/Users/jahnavimenon/Desktop/o/backend/outputs/java',
+        path.join(__dirname, '../outputs/java'),
+        path.join(__dirname, '../outputs/python')
+        //'/Users/jahnavimenon/Desktop/o/backend/outputs/python',
 
         //path.join(__dirname, '../codes')
     ];
