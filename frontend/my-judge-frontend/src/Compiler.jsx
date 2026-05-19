@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import axios from 'axios';
 import { Sun, Moon, History, X, RotateCcw, Trash2, User, ChevronDown } from 'lucide-react';
 import { Navigate, useNavigate } from "react-router-dom";
 import Chatbot from "./Chatbot";
@@ -130,7 +129,7 @@ function Compiler() {
         );
       } else {
         setError(data.error || 'Unknown error');
-        await axios.post(`/api/history`,
+        await API.post(`/api/history`,
           { code, language, output: data.error, status: 'error' },
           { headers: { Authorization: `Bearer ${token}` } }
         );

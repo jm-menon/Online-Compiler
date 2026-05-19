@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Search, Pencil, Trash2, FolderOpen, X, Check, Code, ArrowLeft } from "lucide-react";
 import API from "./api";
 
