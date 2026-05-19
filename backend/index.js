@@ -44,11 +44,12 @@ start();
 // Allow frontend origin (Vite dev server)
 app.use(cors({
   origin: [
-  'http://localhost:5173',
-  'https://my-online-compiler-fcis.onrender.com'
-],         // ← your frontend URL
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],      // allow POST
-  allowedHeaders: ['Content-Type', 'Authorization'],         // allow JSON body and AIs bearer token
+    'http://localhost:5173',
+    'https://my-online-compiler-fcis.onrender.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 
