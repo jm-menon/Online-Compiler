@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, Pencil, Trash2, FolderOpen, X, Check, Code, ArrowLeft } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import API from "./api";
 
 function Save() {
@@ -20,6 +21,8 @@ function Save() {
   const inputBg      = theme === "dark" ? "#111827" : "#ffffff";
   const hoverCardBg  = theme === "dark" ? "#374151" : "#f3f4f6";
 
+if (!token) return <Navigate to="/login" />;
+  
   const handleSearch = async (e) => {
     const value = e.target.value;
     setSearchQuery(value);
@@ -28,7 +31,8 @@ function Save() {
       return;
     }
     try {
-      const res = await API.get(`/api/save/search?query=${value}`);
+      const res = await API.get(`/api/save/search?query=${value}`, {
+                    headers: { Authorization: `Bearer ${token}` }});
       setSavedFiles(res.data);
     } catch (err) {
       console.error(err);
